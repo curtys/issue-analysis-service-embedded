@@ -1,3 +1,5 @@
+package websocket;
+
 import ch.unibe.scg.curtys.classifier.BinaryClassifier;
 import ch.unibe.scg.curtys.classifier.Classifier;
 import ch.unibe.scg.curtys.quality.QualityEstimator;

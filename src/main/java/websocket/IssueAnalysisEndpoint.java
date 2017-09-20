@@ -1,5 +1,8 @@
+package websocket;
+
 import ch.unibe.scg.curtys.vectorization.issue.Issue;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.*;
@@ -9,17 +12,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 @WebSocket
-public class WebsocketHandler {
+public class IssueAnalysisEndpoint {
 
-    private final static Logger LOG = LoggerFactory.getLogger(WebsocketHandler.class);
+    private final static Logger LOG = LoggerFactory.getLogger(IssueAnalysisEndpoint.class);
 
-    @OnWebSocketConnect
-    public void onConnect(Session user) throws Exception {
-    }
-
-    @OnWebSocketClose
-    public void onClose(Session user, int statusCode, String reason) {
-    }
+	@OnWebSocketError
+	public void onError(Session session, Throwable e) {
+		session.close();
+		e.printStackTrace();
+	}
 
     @OnWebSocketMessage
     public void onMessage(Session user, String message) {
@@ -40,7 +41,7 @@ public class WebsocketHandler {
 			out = new Protocol(Protocol.Event.DOES_NOT_UNDERSTAND);
         } finally {
 			try {
-				Service.send(user, out);
+				send(user, out);
 			} catch (IOException e) {
 				LOG.error("Could not send message to remote.");
 				e.printStackTrace();
@@ -49,5 +50,12 @@ public class WebsocketHandler {
 			}
         }
     }
+
+	public static void send(Session session, Protocol msg)
+			throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+		session.getRemote().sendString(mapper.writeValueAsString(msg));
+	}
 
 }
